@@ -16,11 +16,9 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1
 
-    - name: install buffalo
+    - name: Test
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
         go get github.com/gobuffalo/buffalo/buffalo
         buffalo version
-
-    - name: Test
-      run: buffalo test -v -race ./...
+        buffalo test -v -race ./...
