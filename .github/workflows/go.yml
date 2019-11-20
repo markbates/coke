@@ -5,6 +5,18 @@ jobs:
   linux-test:
     name: Linux
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+        # will assign a random free host port
+        - 5432/tcp
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
 
     - name: Set up Go 1.13
@@ -17,6 +29,11 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Test
+      env:
+        # use localhost for the host here because we are running the job on the VM.
+        # If we were running the job on in a container this would be postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }} # get randomly assigned published port
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
         go get github.com/gobuffalo/buffalo/buffalo
